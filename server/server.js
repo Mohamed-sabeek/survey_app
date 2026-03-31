@@ -51,7 +51,7 @@ app.use('/api/survey', surveyRoutes);
 app.use('/api/admin', adminRoutes);
 
 // Fallback logic for Unknown API Routes 
-app.use('/api/*', (req, res) => {
+app.use('/api', (req, res) => {
   res.status(404).json({ error: 'API Endpoint not found' });
 });
 
