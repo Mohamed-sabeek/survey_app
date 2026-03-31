@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Pencil, Trash2 } from 'lucide-react';
-import api from '../utils/api';
+import api from '../../api/axios';
 import EditModal from './EditModal';
 
 export default function DataTable({ data, onRefresh }) {

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { X, Save, Loader2 } from 'lucide-react';
-import api from '../utils/api';
+import api from '../../api/axios';
 
 export default function EditModal({ responseData, onClose, onUpdateSuccess }) {
   const [loading, setLoading] = useState(false);

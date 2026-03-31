@@ -3,6 +3,7 @@ import axios from 'axios';
 const API_URL = import.meta.env.VITE_API_URL;
 
 const api = axios.create({
+  // Use VITE_API_URL if provided, else fallback to localhost for development
   baseURL: API_URL ? `${API_URL}/api` : 'http://localhost:5000/api',
   headers: {
     'Content-Type': 'application/json'
@@ -23,12 +24,13 @@ api.interceptors.request.use(
   }
 );
 
-// Optional: response interceptor to handle auto-logout on 401
+// Response interceptor to handle auto-logout on unauthorized sessions
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('adminToken');
+      // Force redirect to login on token expiration or invalidity
       window.location.href = '/admin/login';
     }
     return Promise.reject(error);

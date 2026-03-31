@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import api from '../api/axios';
 import { questions, PUDUKOTTAI_PLACES } from '../questions';
 
 /* ── Progress Bar ── */
@@ -272,20 +273,10 @@ export default function Survey() {
         }
       });
 
-      const API_URL = import.meta.env.VITE_API_URL || '';
-
-      const res = await fetch(`${API_URL}/api/survey`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Submission failed');
-      }
+      const res = await api.post('/survey', payload);
       setSubmitted(true);
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.error || err.message || 'Submission failed');
     } finally {
       setLoading(false);
     }

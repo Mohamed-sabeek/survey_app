@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { LogOut, Loader2, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import api from '../utils/api';
+import api from '../../api/axios';
 import StatsCards from '../components/StatsCards';
 import Charts from '../components/Charts';
 import DataTable from '../components/DataTable';
