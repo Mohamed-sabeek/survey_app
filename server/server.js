@@ -1,5 +1,5 @@
 require('dotenv').config();
-console.log("🔥 NEW DEPLOY ACTIVE");
+console.log("🔥 NEW DEPLOY ACTIVE: RE-TRIGGER");
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
