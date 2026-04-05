@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, Eye } from 'lucide-react';
 import api from '../../api/axios';
 import EditModal from './EditModal';
+import { questions } from '../../data/questions';
 
 export default function DataTable({ data, onRefresh }) {
   const [editingRow, setEditingRow] = useState(null);
+  const [viewingRow, setViewingRow] = useState(null);
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this response?')) {
@@ -26,6 +28,9 @@ export default function DataTable({ data, onRefresh }) {
     );
   }
 
+  // Define which questions to show in the main table for overview
+  const displayQuestions = questions.slice(0, 6); // Show first 6 questions
+
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-12">
       <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
@@ -39,59 +44,51 @@ export default function DataTable({ data, onRefresh }) {
         <table className="w-full text-left text-sm whitespace-nowrap">
           <thead className="bg-gray-50 text-gray-500 font-semibold border-b border-gray-100">
             <tr>
-              <th className="px-6 py-4 uppercase tracking-wider">Gender</th>
-              <th className="px-6 py-4 uppercase tracking-wider">Age</th>
-              <th className="px-6 py-4 uppercase tracking-wider">Location</th>
-              <th className="px-6 py-4 uppercase tracking-wider">Occupation</th>
-              <th className="px-6 py-4 uppercase tracking-wider">Buy Items</th>
-              <th className="px-6 py-4 uppercase tracking-wider">Buying Probs</th>
-              <th className="px-6 py-4 uppercase tracking-wider text-right">Actions</th>
+              {displayQuestions.map(q => (
+                <th key={q.id} className="px-6 py-4 uppercase tracking-wider text-[10px]">
+                  {q.question_en.split(' ').slice(0, 3).join(' ')}...
+                </th>
+              ))}
+              <th className="px-6 py-4 uppercase tracking-wider text-right text-[10px]">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50 text-gray-700">
             {data.map((row, idx) => (
               <tr key={idx} className="hover:bg-green-50/50 transition-colors">
-                <td className="px-6 py-4 font-medium text-gray-900 capitalize">{row.gender || '-'}</td>
-                <td className="px-6 py-4">{row.age || '-'}</td>
-                <td className="px-6 py-4 capitalize text-gray-600">{row.location || '-'}</td>
-                <td className="px-6 py-4 capitalize text-indigo-600">{row.occupation || '-'}</td>
-                <td className="px-6 py-4">
-                    <div className="flex flex-wrap gap-1">
-                      {(row.buyItems || []).slice(0, 2).map((item, i) => (
-                          <span key={i} className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-xs border border-blue-100">
-                              {item.replace(/_/g, ' ')}
-                          </span>
-                      ))}
-                      {(row.buyItems || []).length > 2 && <span className="text-xs text-gray-400">+{row.buyItems.length - 2}</span>}
-                    </div>
-                    {(!row.buyItems || row.buyItems.length === 0) && <span className="text-gray-400">-</span>}
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex flex-wrap gap-1">
-                      {(row.buyingProblems || []).slice(0, 2).map((item, i) => (
-                          <span key={i} className="px-2 py-0.5 bg-red-50 text-red-600 rounded-md text-xs border border-red-100">
-                              {item.replace(/_/g, ' ')}
-                          </span>
-                      ))}
-                      {(row.buyingProblems || []).length > 2 && <span className="text-xs text-gray-400">+{row.buyingProblems.length - 2}</span>}
-                  </div>
-                  {(!row.buyingProblems || row.buyingProblems.length === 0) && <span className="text-gray-400">-</span>}
-                </td>
+                {displayQuestions.map(q => {
+                  const val = row[q.id];
+                  return (
+                    <td key={q.id} className="px-6 py-4 max-w-[150px] truncate">
+                      {Array.isArray(val) ? (
+                        <div className="flex flex-wrap gap-1">
+                          {val.slice(0, 2).map((item, i) => (
+                            <span key={i} className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[10px] border border-blue-100">
+                              {item}
+                            </span>
+                          ))}
+                          {val.length > 2 && <span className="text-[10px] text-gray-400">+{val.length - 2}</span>}
+                        </div>
+                      ) : (
+                        <span className="capitalize text-gray-600">{val || '-'}</span>
+                      )}
+                    </td>
+                  );
+                })}
                 <td className="px-6 py-4 text-right">
-                  <div className="flex items-center justify-end gap-3">
+                  <div className="flex items-center justify-end gap-2">
                     <button 
                       onClick={() => setEditingRow(row)}
-                      className="text-gray-400 hover:text-blue-500 transition-colors p-1"
+                      className="text-gray-400 hover:text-blue-500 transition-colors p-1.5 bg-gray-50 rounded-lg"
                       title="Edit Response"
                     >
-                      <Pencil className="w-5 h-5" />
+                      <Pencil className="w-4 h-4" />
                     </button>
                     <button 
                       onClick={() => handleDelete(row._id)}
-                      className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                      className="text-gray-400 hover:text-red-500 transition-colors p-1.5 bg-gray-50 rounded-lg"
                       title="Delete Response"
                     >
-                      <Trash2 className="w-5 h-5" />
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </td>

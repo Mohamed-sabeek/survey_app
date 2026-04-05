@@ -12,8 +12,23 @@ connectDB();
 const app = express();
 
 // Security & CORS Configuration
+const allowedOrigins = [
+  'https://survey-app-sigma-neon.vercel.app',
+  'http://localhost:5172', // For local Vite
+  'http://localhost:5173', // For local Vite
+  'http://localhost:5174', // For local Vite
+];
+
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173', // Fallback for local dev
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,

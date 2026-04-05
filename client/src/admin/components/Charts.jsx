@@ -15,75 +15,105 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tool
 export default function Charts({ data }) {
   if (!data || data.length === 0) return null;
 
-  // Aggregate Product Demands
+  // Aggregate Product Demands (q7)
   const productCounts = {};
   data.forEach((d) => {
-    (d.buyItems || []).forEach((p) => {
-      productCounts[p] = (productCounts[p] || 0) + 1;
-    });
+    const val = d.q7;
+    if (val) {
+      productCounts[val] = (productCounts[val] || 0) + 1;
+    }
   });
 
   const pieData = {
-    labels: Object.keys(productCounts).map(l => l.replace(/_/g, ' ').toUpperCase()),
+    labels: Object.keys(productCounts).map(l => l.toUpperCase()),
     datasets: [
       {
         data: Object.values(productCounts),
         backgroundColor: ['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6'],
-        borderWidth: 1,
+        borderWidth: 0,
+        hoverOffset: 20,
       },
     ],
   };
 
-  // Aggregate Problems
+  // Aggregate Problems (q9)
   const problemCounts = {};
   data.forEach((d) => {
-    (d.buyingProblems || []).forEach((p) => {
-      problemCounts[p] = (problemCounts[p] || 0) + 1;
-    });
+    const val = d.q9;
+    if (val) {
+      problemCounts[val] = (problemCounts[val] || 0) + 1;
+    }
   });
 
   const barData = {
-    labels: Object.keys(problemCounts).map(l => l.replace(/_/g, ' ').toUpperCase()),
+    labels: Object.keys(problemCounts).map(l => l.toUpperCase()),
     datasets: [
       {
-        label: 'Buying Problems Density',
+        label: 'Problem Density',
         data: Object.values(problemCounts),
-        backgroundColor: '#3B82F6',
-        borderRadius: 6,
+        backgroundColor: '#6366F1',
+        borderRadius: 12,
+        barThickness: 32,
       },
     ],
+  };
+
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          padding: 20,
+          font: { weight: 'bold', size: 11 },
+          color: '#94a3b8',
+        }
+      },
+      tooltip: {
+        backgroundColor: '#1e293b',
+        padding: 12,
+        titleFont: { size: 14, weight: 'bold' },
+        bodyFont: { size: 13 },
+        cornerRadius: 12,
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: { display: false },
+        ticks: { color: '#94a3b8', font: { weight: 'bold' } }
+      },
+      x: {
+        grid: { display: false },
+        ticks: { color: '#94a3b8', font: { weight: 'bold' } }
+      }
+    }
   };
 
   const hasPieData = Object.keys(productCounts).length > 0;
   const hasBarData = Object.keys(problemCounts).length > 0;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center">
-        <h3 className="text-lg font-bold text-gray-800 mb-4 w-full text-left">Product Demand (Buy Items)</h3>
-        <div className="w-full max-w-sm h-64 flex items-center justify-center">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+      <div className="bg-white p-8 rounded-[2rem] shadow-xl shadow-gray-100 border border-gray-100 flex flex-col items-center group transition-all duration-500 hover:shadow-2xl">
+        <h3 className="text-xl font-black text-gray-900 mb-8 w-full text-left tracking-tight">Product Demand <span className="text-sm font-bold text-gray-300 ml-2">(Q7)</span></h3>
+        <div className="w-full max-w-sm h-72 flex items-center justify-center relative">
           {hasPieData ? (
-             <Pie data={pieData} options={{ maintainAspectRatio: false }} />
+             <Pie data={pieData} options={{ maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }} />
           ) : (
-             <p className="text-gray-400 italic">No data to display</p>
+             <div className="text-gray-300 font-bold p-12 bg-gray-50 rounded-full w-48 h-48 flex items-center justify-center text-center leading-tight">No data detected in Q7</div>
           )}
         </div>
       </div>
 
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center">
-        <h3 className="text-lg font-bold text-gray-800 mb-4 w-full text-left">Reported Buying Problems</h3>
-        <div className="w-full h-64 flex items-center justify-center">
+      <div className="bg-white p-8 rounded-[2rem] shadow-xl shadow-gray-100 border border-gray-100 flex flex-col items-center group transition-all duration-500 hover:shadow-2xl">
+        <h3 className="text-xl font-black text-gray-900 mb-8 w-full text-left tracking-tight">Buying Problems <span className="text-sm font-bold text-gray-300 ml-2">(Q9)</span></h3>
+        <div className="w-full h-72 flex items-center justify-center">
           {hasBarData ? (
-            <Bar
-              data={barData}
-              options={{
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-              }}
-            />
+            <Bar data={barData} options={options} />
           ) : (
-            <p className="text-gray-400 italic">No data to display</p>
+            <div className="text-gray-300 font-bold p-12 bg-gray-50 rounded-full w-48 h-48 flex items-center justify-center text-center leading-tight">No data detected in Q9</div>
           )}
         </div>
       </div>
