@@ -2,17 +2,24 @@
 
 A Tamil-first mobile-friendly survey application targeting rural and semi-urban communities, paired with a fully secured, analytical Admin Dashboard capable of real-time CRUD operations.
 
-## Technology Stack
-- **Frontend**: React + Vite + Tailwind CSS + React Router + Chart.js
+## ✨ Recent Enhancements
+- **Dynamic Hybrid Inputs**: Added "Other" custom text box support across all categories (Business, Farming, Labour, etc.).
+* **Admin Scaling Optimization**: Dashboard layout refined for a perfect 100% zoom experience.
+* **Full Question Mapping**: Inspection reports now display the actual English/Tamil question text instead of raw IDs.
+* **Always-On Management**: Improved Admin UX with persistent view and delete actions.
+
+## 🛠 Technology Stack
+- **Frontend**: React 19 + Vite + Vanilla CSS + React Router + Chart.js
 - **Backend Architecture**: Node.js + Express (MVC Pattern)
 - **Database**: MongoDB (Mongoose)
-- **Security**: JWT (JSON Web Tokens) Authentication + bcryptjs password hashing
+- **Security**: JWT (JSON Web Tokens) Authentication + bcryptjs hashing
+- **Deployment**: Configured for Vercel/Render compatibility
 
-## Core Features
-1. **Public Survey Portal**: A deeply structured, responsive survey using rich 3D emoji assets in place of standard text formats.
-2. **Secure Admin Login**: Gateway built natively with localized token-based tracking.
-3. **Data Visualizations**: Dashboard parses MongoDB array documents directly into interactive Pie & Bar graphs natively.
-4. **Full CRUD Support**: Admins can edit existing payloads or discard false data safely from the UI.
+## 🌟 Core Features
+1. **Bilingual Public Survey**: Responsive Tamil/English survey using rich emoji-based navigation for maximum accessibility.
+2. **Secure Admin Portal**: Native JWT-based gateway with session management.
+3. **Advanced Visual Analytics**: Real-time data parsing into interactive Pie, Bar, and Line charts.
+4. **Data Management Tools**: Full CRUD capability with a robust search/filter system for hundreds of responses.
 
 ---
 
@@ -20,16 +27,16 @@ A Tamil-first mobile-friendly survey application targeting rural and semi-urban 
 
 ### Prerequisites
 - Node.js 18+
-- Active MongoDB Connection String (Atlas or Local)
+- Active MongoDB Connection String (Atlas recommended)
 
 ### 1. Configure Environment Variables
-You must set up `.env` files in both the `client` and `server` folders!
+Set up `.env` files in both `client` and `server` folders.
 
 #### `server/.env`
 ```env
 MONGO_URI=mongodb+srv://<user>:<pwd>@cluster...
 PORT=5000
-JWT_SECRET=supersecretkey_change_this_in_production
+JWT_SECRET=yoursecretkey
 ```
 
 #### `client/.env`
@@ -38,20 +45,21 @@ JWT_SECRET=supersecretkey_change_this_in_production
 VITE_API_URL=http://localhost:5000
 ```
 
-### 2. Start the Backend
+### 2. Run the Application
+You need to run both folders simultaneously.
+
+**Backend:**
 ```bash
 cd server
 npm install
 npm run dev
-# Server spins up on http://localhost:5000
 ```
 
-### 3. Start the Frontend
+**Frontend:**
 ```bash
 cd client
 npm install
 npm run dev
-# UI accessible on http://localhost:5173
 ```
 
 ---
@@ -62,13 +70,12 @@ npm run dev
 |---|---|---|---|
 | **POST** | `/api/survey` | Public | Submit new survey payload |
 | **POST** | `/api/admin/login` | Public | Admin authentication gateway |
-| **POST** | `/api/admin/register` | Postman | Create initial admin accounts |
 | **GET** | `/api/admin/responses` | **JWT** | Fetch all dashboard analytics |
 | **PUT** | `/api/admin/responses/:id`| **JWT** | Update specific database row |
-| **DELETE**| `/api/admin/responses/:id`| **JWT** | Strip response from database |
+| **DELETE**| `/api/admin/responses/:id`| **JWT** | Remove response from database |
 
 ---
 
 ## ☁️ Deployment Guidelines
-- **Frontend (Vercel)**: When pushing your code, explicitly set `VITE_API_URL=https://your-backend.onrender.com` in your Vercel Project Environment Settings. The `axios` configurations are dynamically built to absorb this naturally.
-- **Backend (Render)**: Supply `MONGO_URI` and `JWT_SECRET` manually in Render's dashboard. Render automatically provides `PORT`.
+- **Frontend (Vercel)**: Set `VITE_API_URL` to your live backend URL in Vercel settings.
+- **Backend (Render)**: Configure `MONGO_URI` and `JWT_SECRET` as secret environment variables. Render handles the `PORT` automatically.

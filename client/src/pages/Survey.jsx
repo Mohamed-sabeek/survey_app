@@ -1,287 +1,28 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import api from '../api/axios';
-import { questions, PUDUKOTTAI_PLACES } from '../data/questions';
-
-/* ── Progress Bar ── */
-function ProgressBar({ step, total }) {
-  const pct = Math.round((step / total) * 100);
-  return (
-    <div className="w-full px-4 pt-3 pb-2 bg-white">
-      <div className="flex justify-between text-[10px] uppercase tracking-wider mb-1 text-gray-500 font-bold">
-        <span>Question {step + 1} of {total}</span>
-        <span className="text-green-600">{pct}%</span>
-      </div>
-      <div className="w-full bg-gray-100 rounded-full h-2 shadow-inner">
-        <div
-          className="bg-green-500 h-2 rounded-full transition-all duration-700 ease-out shadow-sm"
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-    </div>
-  );
-}
-
-/* ── Location autocomplete input ── */
-function LocationInput({ value, onChange }) {
-  const [query, setQuery] = useState(value || '');
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-
-  const filtered = query.length > 0
-    ? PUDUKOTTAI_PLACES.filter(p => p.toLowerCase().includes(query.toLowerCase()))
-    : PUDUKOTTAI_PLACES;
-
-  useEffect(() => {
-    function handleClick(e) {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
-    }
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, []);
-
-  function select(place) {
-    setQuery(place);
-    onChange(place);
-    setOpen(false);
-  }
-
-  return (
-    <div ref={ref} className="relative">
-      <div className="flex items-center border-2 border-gray-200 rounded-2xl overflow-hidden focus-within:border-green-400 bg-white transition-all shadow-sm">
-        <span className="pl-4"><img src="/assets/emojis/round_pushpin.png" className="w-6 h-6" alt="pin"/></span>
-        <input
-          type="text"
-          value={query}
-          onChange={e => { setQuery(e.target.value); onChange(e.target.value); setOpen(true); }}
-          onFocus={() => setOpen(true)}
-          placeholder="ஊர் பெயர் தேடுங்கள்... (Search place)"
-          className="flex-1 px-3 py-4 text-base text-gray-700 outline-none bg-transparent"
-        />
-        {query && (
-          <button
-            onClick={() => { setQuery(''); onChange(''); setOpen(false); }}
-            className="pr-4 text-gray-400 text-2xl"
-          >×</button>
-        )}
-      </div>
-
-      {open && filtered.length > 0 && (
-        <ul className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-2xl shadow-xl max-h-60 overflow-y-auto animate-fadeIn">
-          {filtered.map(place => (
-            <li key={place}>
-              <button
-                onClick={() => select(place)}
-                className={`w-full text-left px-5 py-4 text-base font-medium transition-colors border-b border-gray-50 last:border-0
-                  ${value === place ? 'bg-green-500 text-white' : 'text-gray-700 hover:bg-green-50'}`}
-              >
-                {place}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
-
-/* ── Checkbox Group Component ── */
-function CheckboxGroup({ options, value = [], onChange, hasOther, otherValue, onOtherChange }) {
-  const toggleOption = (val) => {
-    const newVal = value.includes(val)
-      ? value.filter(v => v !== val)
-      : [...value, val];
-    onChange(newVal);
-  };
-
-  const isOtherSelected = value.includes('other');
-
-  return (
-    <div className="flex flex-col gap-3">
-      {options.map(opt => (
-        <button
-          key={opt.value}
-          onClick={() => toggleOption(opt.value)}
-          className={`w-full text-left px-4 py-4 rounded-2xl border-2 text-base font-semibold transition-all duration-150 active:scale-[0.98] flex items-center justify-between gap-3
-            ${value.includes(opt.value)
-              ? 'bg-green-500 border-green-500 text-white shadow-md'
-              : 'bg-white border-gray-200 text-gray-700 shadow-sm'}`}
-        >
-          <div className="flex items-center gap-3">
-            {opt.img && <img src={opt.img} alt="" className="w-8 h-8" loading="lazy" />}
-            <span>{opt.label}</span>
-          </div>
-          <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center ${value.includes(opt.value) ? 'border-white bg-white/20' : 'border-gray-200'}`}>
-            {value.includes(opt.value) && <span className="text-white text-xs">✓</span>}
-          </div>
-        </button>
-      ))}
-      
-      {hasOther && (
-        <>
-          <button
-            onClick={() => toggleOption('other')}
-            className={`w-full text-left px-4 py-4 rounded-2xl border-2 text-base font-semibold transition-all duration-150 active:scale-[0.98] flex items-center justify-between gap-3
-              ${isOtherSelected
-                ? 'bg-green-500 border-green-500 text-white shadow-md'
-                : 'bg-white border-gray-200 text-gray-700 shadow-sm'}`}
-          >
-            <div className="flex items-center gap-3">
-              <img src="/assets/emojis/pencil.png" alt="" className="w-8 h-8" />
-              <span>மற்றவை (Other)</span>
-            </div>
-            <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center ${isOtherSelected ? 'border-white bg-white/20' : 'border-gray-200'}`}>
-              {isOtherSelected && <span className="text-white text-xs">✓</span>}
-            </div>
-          </button>
-          
-          {isOtherSelected && (
-            <input
-              autoFocus
-              type="text"
-              value={otherValue || ''}
-              onChange={e => onOtherChange(e.target.value)}
-              placeholder="இங்கே எழுதுங்கள்... (Type here)"
-              className="w-full border-2 border-green-300 rounded-2xl px-4 py-4 text-base text-gray-700 focus:outline-none focus:border-green-500 shadow-inner bg-green-50/30"
-            />
-          )}
-        </>
-      )}
-    </div>
-  );
-}
-
-/* ── Radio Group Component ── */
-function RadioGroup({ options, value, onChange, hasOther, otherValue, onOtherChange }) {
-  const isOther = value === 'other';
-  return (
-    <div className="flex flex-col gap-3">
-      {options?.map(opt => (
-        <button
-          key={opt.value}
-          onClick={() => onChange(opt.value)}
-          className={`w-full text-left px-4 py-4 rounded-2xl border-2 text-base font-semibold transition-all duration-150 active:scale-[0.98] flex items-center justify-between gap-3
-            ${value === opt.value
-              ? 'bg-green-500 border-green-500 text-white shadow-md'
-              : 'bg-white border-gray-200 text-gray-700 shadow-sm'}`}
-        >
-          <div className="flex items-center gap-3">
-            {opt.img && <img src={opt.img} alt="" className="w-8 h-8" loading="lazy" />}
-            <span>{opt.label}</span>
-          </div>
-          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${value === opt.value ? 'border-white bg-white/20' : 'border-gray-200'}`}>
-            {value === opt.value && <div className="w-2 h-2 rounded-full bg-white" />}
-          </div>
-        </button>
-      ))}
-
-      {hasOther && (
-        <>
-          <button
-            onClick={() => onChange('other')}
-            className={`w-full text-left px-4 py-4 rounded-2xl border-2 text-base font-semibold transition-all duration-150 active:scale-[0.98] flex items-center justify-between gap-3
-              ${isOther
-                ? 'bg-green-500 border-green-500 text-white shadow-md'
-                : 'bg-white border-gray-200 text-gray-700 shadow-sm'}`}
-          >
-            <div className="flex items-center gap-3">
-              <img src="/assets/emojis/pencil.png" alt="" className="w-8 h-8" />
-              <span>மற்றவை (Other)</span>
-            </div>
-            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${isOther ? 'border-white bg-white/20' : 'border-gray-200'}`}>
-              {isOther && <div className="w-2 h-2 rounded-full bg-white" />}
-            </div>
-          </button>
-          
-          {isOther && (
-            <input
-              autoFocus
-              type="text"
-              value={otherValue || ''}
-              onChange={e => onOtherChange(e.target.value)}
-              placeholder="இங்கே எழுதுங்கள்... (Type here)"
-              className="w-full border-2 border-green-300 rounded-2xl px-4 py-4 text-base text-gray-700 focus:outline-none focus:border-green-500 shadow-inner bg-green-50/30"
-            />
-          )}
-        </>
-      )}
-    </div>
-  );
-}
-
-/* ── Single question card ── */
-function QuestionCard({ q, answers, onChange }) {
-  const value = answers[q.id];
-  const otherValue = answers[`${q.id}_other`];
-
-  return (
-    <div className="animate-fadeIn flex flex-col gap-6">
-      <div className="text-center px-2 flex flex-col items-center">
-        <div className="mb-4 bg-green-50 w-24 h-24 rounded-full flex items-center justify-center border-4 border-white shadow-sm ring-1 ring-green-100">
-          <img src={q.icon} alt="" className="w-12 h-12 drop-shadow-md" />
-        </div>
-        <h2 className="text-xl font-extrabold text-gray-900 leading-tight mb-2">{q.question_ta}</h2>
-        <p className="text-sm font-medium text-gray-400">({q.question_en})</p>
-      </div>
-
-      <div className="w-full">
-        {q.type === 'radio' && (
-          <RadioGroup
-            options={q.options}
-            value={value}
-            hasOther={q.hasOther}
-            otherValue={otherValue}
-            onChange={v => onChange(q.id, v)}
-            onOtherChange={v => onChange(`${q.id}_other`, v)}
-          />
-        )}
-
-        {q.type === 'checkbox' && (
-          <CheckboxGroup
-            options={q.options}
-            value={value}
-            hasOther={q.hasOther}
-            otherValue={otherValue}
-            onChange={v => onChange(q.id, v)}
-            onOtherChange={v => onChange(`${q.id}_other`, v)}
-          />
-        )}
-
-        {q.type === 'location' && (
-          <LocationInput
-            value={value}
-            onChange={v => onChange(q.id, v)}
-          />
-        )}
-
-        {q.type === 'text' && (
-          <textarea
-            rows={5}
-            value={value || ''}
-            onChange={e => onChange(q.id, e.target.value)}
-            placeholder={q.placeholder}
-            className="w-full border-2 border-gray-200 rounded-2xl p-5 text-base text-gray-700 focus:outline-none focus:border-green-400 focus:ring-4 focus:ring-green-100 resize-none shadow-sm transition-all"
-          />
-        )}
-      </div>
-    </div>
-  );
-}
+import { questions } from '../data/questions';
+import QuestionRenderer from '../components/QuestionRenderer';
+import { validateSurvey } from '../utils/validation';
+import { formatPayload } from '../utils/payloadFormatter';
+import { ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
 
 /* ── Success screen ── */
 function SuccessScreen() {
   return (
-    <div className="flex flex-col items-center justify-center text-center px-6 py-20 animate-fadeIn min-h-[60vh]">
-      <div className="mb-8 relative">
-        <div className="absolute inset-0 animate-ping rounded-full bg-green-200 opacity-20 scale-150"></div>
-        <img src="/assets/emojis/party_popper.png" alt="party" className="w-32 h-32 drop-shadow-xl mx-auto relative z-10" />
+    <div className="flex flex-col items-center justify-center text-center px-8 py-24 animate-fadeIn min-h-[60vh] bg-white rounded-[3rem] shadow-2xl border border-gray-100 max-w-2xl mx-auto">
+      <div className="mb-10 relative">
+        <div className="absolute inset-0 animate-ping rounded-full bg-green-100 opacity-40 scale-150"></div>
+        <div className="bg-gradient-to-br from-green-400 to-green-600 w-32 h-32 rounded-full flex items-center justify-center shadow-2xl relative z-10 border-8 border-white/50 backdrop-blur-sm">
+          <CheckCircle2 className="w-16 h-16 text-white drop-shadow-lg" />
+        </div>
       </div>
-      <h2 className="text-4xl font-black text-gray-900 mb-2">நன்றி!</h2>
-      <p className="text-xl text-gray-600 font-medium">பதில்கள் பதிவு செய்யப்பட்டன.</p>
-      <p className="text-sm text-gray-400 mt-2 mb-12">(Responses Recorded Successfully)</p>
+      <h2 className="text-5xl font-black text-gray-900 mb-4 tracking-tighter">நன்றி!</h2>
+      <p className="text-2xl text-gray-600 font-bold mb-2 leading-tight">உங்கள் பதில்கள் வெற்றிகரமாக பதிவு செய்யப்பட்டன.</p>
+      <p className="text-base font-black text-gray-300 uppercase tracking-[0.2em] mb-16">(Responses Recorded Successfully)</p>
       
       <button 
         onClick={() => window.location.reload()}
-        className="w-full max-w-xs bg-gray-900 text-white rounded-2xl py-5 font-bold shadow-lg active:scale-95 transition-all"
+        className="w-full max-w-xs bg-gray-900 text-white rounded-3xl py-6 font-black text-lg shadow-2xl hover:shadow-gray-300 hover:-translate-y-1 active:scale-95 transition-all"
       >
         புதிய கருத்துக் கணிப்பு (New Survey)
       </button>
@@ -289,186 +30,189 @@ function SuccessScreen() {
   );
 }
 
-/* ── Main App ── */
 export default function Survey() {
-  const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState({});
+  const [errors, setErrors] = useState({});
+  const [currentStep, setCurrentStep] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [submitError, setSubmitError] = useState('');
+  
+  const prevOccupation = useRef();
 
-  const visibleQuestions = questions.filter(q =>
-    !q.conditional || (
-      // Simple conditional check: currently only supports one condition
-      answers[q.conditional.id] === q.conditional.value
-    )
-  );
+  // ── Branching Logic (Computed visible questions) ──
+  const visibleQuestions = useMemo(() => {
+    return questions.filter(q => {
+      if (!q.dependsOn) return true;
+      const { questionId, value } = q.dependsOn;
+      const actualValue = answers[questionId];
+      return Array.isArray(value) ? value.includes(actualValue) : actualValue === value;
+    });
+  }, [answers]);
 
-  const current = visibleQuestions[step];
-  const isLast = step === visibleQuestions.length - 1;
-  const value = answers[current?.id];
+  // ── Reset Logic (CRITICAL) ──
+  useEffect(() => {
+    const occupation = answers.q_occupation;
+    if (occupation && prevOccupation.current && occupation !== prevOccupation.current) {
+      setAnswers(prev => ({
+        q_gender: prev.q_gender,
+        q_area: prev.q_area,
+        q_age: prev.q_age,
+        q_occupation: occupation
+      }));
+      setErrors({});
+    }
+    prevOccupation.current = occupation;
+  }, [answers.q_occupation]);
 
-  const canProceed = (() => {
-    if (!current?.required) return true;
+  const handleUpdate = (id, val) => {
+    setAnswers(prev => ({ ...prev, [id]: val }));
+    if (errors[id]) {
+        const next = { ...errors };
+        delete next[id];
+        setErrors(next);
+    }
+  };
+
+  const handleNext = () => {
+    const currentQ = visibleQuestions[currentStep];
+    const validation = validateSurvey([currentQ], answers);
     
-    if (current.type === 'checkbox') {
-      const hasSelection = value && value.length > 0;
-      if (!hasSelection) return false;
-      if (value.includes('other')) {
-        return !!(answers[`${current.id}_other`]?.trim());
-      }
-      return true;
-    }
-
-    if (!value) return false;
-
-    if (value === 'other') {
-      return !!(answers[`${current.id}_other`]?.trim());
-    }
-
-    if (current.type === 'text') {
-      return value.trim().length > 0;
-    }
-
-    return true;
-  })();
-
-  function handleChange(key, val) {
-    setAnswers(prev => ({ ...prev, [key]: val }));
-    setError('');
-  }
-
-  async function handleNext() {
-    if (!canProceed) {
-      setError('Please answer the question before proceeding.');
+    if (!validation.isValid) {
+      setErrors(validation.errors);
       return;
     }
-    
-    if (isLast) {
-      await handleSubmit();
+
+    if (currentStep < visibleQuestions.length - 1) {
+      setCurrentStep(currentStep + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      setStep(s => s + 1);
-      // Scroll to top on step change
-      window.scrollTo(0, 0);
+      handleSubmit();
     }
-  }
+  };
 
-  async function handleSubmit() {
+  const handleBack = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handleSubmit = async () => {
+    setSubmitError('');
     setLoading(true);
-    setError('');
     try {
-      const payload = { ...answers };
-      
-      // Clean up and flatten data before sending
-      questions.forEach(q => {
-        const val = payload[q.id];
-        
-        // Handle "Other" inputs for radio/checkbox
-        if (q.hasOther) {
-          const otherText = payload[`${q.id}_other`];
-          
-          if (q.type === 'radio') {
-            if (val === 'other' && otherText) {
-              payload[q.id] = otherText;
-            }
-          } else if (q.type === 'checkbox' && Array.isArray(val)) {
-            if (val.includes('other') && otherText) {
-              payload[q.id] = [...val.filter(v => v !== 'other'), otherText];
-            }
-          }
-          delete payload[`${q.id}_other`];
-        }
-
-        // Default empty arrays for checkbox if not selected and shown
-        if (q.type === 'checkbox' && !payload[q.id]) {
-          payload[q.id] = [];
-        }
-      });
-
+      const payload = formatPayload(visibleQuestions, answers);
       await api.post('/survey', payload);
       setSubmitted(true);
+      window.scrollTo(0, 0);
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Submission failed. Please try again.');
+      setSubmitError(err.response?.data?.error || 'சமர்ப்பிப்பதில் தோல்வி. மீண்டும் முயலவும். (Submission failed)');
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center p-4">
-        <div className="w-full max-w-md"><SuccessScreen /></div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 font-sans">
+        <SuccessScreen />
       </div>
     );
   }
 
-  return (
-    <div className="flex flex-col min-h-screen bg-gray-50/50 max-w-md mx-auto relative shadow-2xl overflow-hidden border-x border-gray-100">
+  const currentQ = visibleQuestions[currentStep];
+  const progressPercent = Math.round(((currentStep + 1) / visibleQuestions.length) * 100);
 
-      {/* Sticky Top Bar (Mobile-Targeted) */}
-      <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100">
-        <div className="text-center py-4 px-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="bg-green-500 w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-sm">K</div>
-            <h1 className="text-base font-black text-gray-800 tracking-tight uppercase">Survey</h1>
+  return (
+    <div className="min-h-screen bg-gray-50/30 font-sans flex flex-col items-center selection:bg-green-100 relative">
+      
+      {/* Compact Header (Sticky) */}
+      <header className="sticky top-0 z-[60] w-full max-w-md bg-white/80 backdrop-blur-3xl border-b border-gray-100/50 shadow-sm px-5 py-3 flex justify-center">
+        <div className="w-full flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col">
+              <h1 className="text-sm font-black text-gray-900 uppercase tracking-tighter flex items-center gap-1.5">
+                Survey
+              </h1>
+            </div>
+            <div className="flex flex-col items-end">
+              <span className="text-[9px] font-black text-gray-300 uppercase tracking-widest">Progress</span>
+              <span className="text-xs font-black text-green-600 bg-green-50 px-2 py-0.5 rounded-lg border border-green-100 shadow-inner">{currentStep + 1} / {visibleQuestions.length}</span>
+            </div>
           </div>
-          <div className="text-[10px] font-bold text-gray-400 bg-gray-100 px-3 py-1 rounded-full uppercase tracking-tighter">
-            Pudukottai Community
+          
+          {/* Thinner Progress Bar */}
+          <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden relative shadow-inner">
+             <div 
+               className="h-full bg-gradient-to-r from-green-400 to-green-600 transition-all duration-700 ease-out shadow-[0_0_8px_rgba(34,197,94,0.3)]"
+               style={{ width: `${progressPercent}%` }}
+             />
+             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
           </div>
         </div>
-        <ProgressBar step={step} total={visibleQuestions.length} />
-      </div>
+      </header>
 
-      {/* Main Content Area */}
-      <main className="flex-1 px-5 py-10 pb-32">
-        <QuestionCard 
-          key={current?.id} // Force re-render on step change for animations
-          q={current} 
-          answers={answers} 
-          onChange={handleChange} 
-        />
-        
-        {error && (
-          <div className="mt-8 bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-2xl text-sm font-bold animate-shake text-center">
-            ⚠️ {error}
-          </div>
-        )}
+      {/* Main Layout (Max-w-md) */}
+      <main className="w-full max-w-md px-5 py-4 pb-32 flex-1 animate-slideUp">
+        <div className="space-y-4">
+          <QuestionRenderer
+            q={currentQ}
+            answer={answers[currentQ?.id]}
+            otherValue={answers[`${currentQ?.id}_other`]}
+            onChange={handleUpdate}
+            error={errors[currentQ?.id]}
+          />
+          
+          {submitError && (
+            <div className="bg-rose-50 border-2 border-rose-100 text-rose-600 p-4 rounded-2xl text-center font-bold text-xs animate-shake shadow-lg shadow-rose-100/20 flex items-center justify-center gap-2">
+              <span className="text-lg">⚠️</span> 
+              <span className="leading-tight">{submitError}</span>
+            </div>
+          )}
+        </div>
       </main>
 
-      {/* Floating Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto p-4 z-50 pointer-events-none">
-        <div className="flex gap-3 pointer-events-auto bg-white/60 backdrop-blur-sm p-2 rounded-3xl border border-white/50 shadow-2xl">
-          {step > 0 && (
+      {/* Compact Floating Bottom Navigation */}
+      <footer className="fixed bottom-4 left-0 right-0 z-50 flex justify-center px-5">
+        <div className="w-full max-w-md bg-white/80 backdrop-blur-3xl p-2.5 rounded-2xl border border-white/50 shadow-[0_15px_30px_-10px_rgba(0,0,0,0.1)] flex items-center gap-3 animate-scaleIn">
+          
+          {/* Smaller Back Button */}
+          {currentStep > 0 ? (
             <button
-              onClick={() => setStep(s => s - 1)}
-              className="flex-1 py-5 rounded-2xl border-2 border-gray-200 bg-white text-gray-600 text-sm font-bold active:bg-gray-50 transition-all shadow-sm active:scale-95"
+              onClick={handleBack}
+              className="group p-3 rounded-xl bg-white text-gray-400 hover:text-gray-900 border border-gray-100 hover:border-gray-200 shadow-sm transition-all active:scale-95"
             >
-              ← Back
+              <ChevronLeft className="w-5 h-5 stroke-[3px]" />
             </button>
+          ) : (
+            <div className="w-[46px]" /> 
           )}
+
+          {/* Compact Next/Submit Button */}
           <button
             onClick={handleNext}
-            disabled={loading}
-            className={`flex-[2.5] py-5 rounded-2xl text-base font-black text-white transition-all duration-300 shadow-lg active:scale-[0.98]
-              ${canProceed && !loading
-                ? 'bg-green-500 shadow-green-200 active:bg-green-600'
-                : 'bg-gray-300 opacity-60 cursor-not-allowed shadow-none'}`}
+            disabled={loading || !validateSurvey([currentQ], answers).isValid}
+            className={`flex-1 py-3 rounded-xl text-sm font-black text-white transition-all shadow-xl active:scale-[0.98] flex items-center justify-center gap-2 group relative overflow-hidden
+              ${loading || !validateSurvey([currentQ], answers).isValid ? 'bg-gray-300 shadow-none cursor-not-allowed opacity-50' : 'bg-green-600 hover:bg-green-700 hover:shadow-green-200/40'}`}
           >
             {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                </svg>
-                Saving...
-              </span>
-            ) : isLast ? 'SUBMIT (சமர்ப்பி) ✅' : 'NEXT (அடுத்து) →'}
+              <span className="animate-spin h-5 w-5 border-4 border-white/30 border-t-white rounded-full" />
+            ) : (
+              <div className="flex items-center gap-2 relative z-10 uppercase tracking-tight">
+                <span>{currentStep === visibleQuestions.length - 1 ? 'பதிவு செய் (SUBMIT)' : 'அடுத்த கேள்வி (NEXT)'}</span>
+                <ChevronRight className="w-5 h-5 stroke-[3px] group-hover:translate-x-1 transition-transform" />
+              </div>
+            )}
           </button>
         </div>
-      </div>
+      </footer>
 
-      {/* Mobile styling safe areas */}
-      <div className="h-safe-bottom" />
+      {/* Rich Background Decor */}
+      <div className="fixed inset-0 pointer-events-none -z-10 bg-gray-50/50">
+         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-green-50 rounded-full blur-[120px] opacity-60 animate-blob" />
+         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-50 rounded-full blur-[120px] opacity-60 animate-blob animation-delay-2000" />
+      </div>
     </div>
   );
 }
