@@ -9,7 +9,7 @@ import { Pie } from 'react-chartjs-2';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-export default function Charts({ data }) {
+export default function Charts({ data, onSelectCategory, onViewFull }) {
   
   // ── Occupation Distribution (Always Global) ──
   const occCounts = useMemo(() => {
@@ -35,6 +35,20 @@ export default function Charts({ data }) {
 
   const pieOptions = {
     maintainAspectRatio: false,
+    onClick: (event, elements, chart) => {
+      if (elements.length > 0) {
+        const index = elements[0].index;
+        const rawLabel = chart.data.labels[index];
+        if (rawLabel) {
+          onSelectCategory(rawLabel.toLowerCase());
+          // Open Modal with Full View
+          onViewFull({
+            title: 'Global Response Analysis',
+            data: occPieData
+          });
+        }
+      }
+    },
     plugins: {
       legend: { 
         position: 'bottom', 
@@ -59,20 +73,28 @@ export default function Charts({ data }) {
   };
 
   return (
-    <div className="bg-slate-50 p-8 lg:p-10 rounded-[3rem] border border-slate-100 flex flex-col items-center group transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/40 relative overflow-hidden">
+    <div className="bg-slate-50 p-5 lg:p-6 rounded-3xl border border-slate-100 flex flex-col items-center group transition-all duration-300 hover:shadow-lg hover:shadow-slate-200/30 relative overflow-hidden">
       {/* Decorative background element */}
-      <div className="absolute top-[-10%] left-[-10%] w-40 h-40 bg-indigo-100 rounded-full blur-[80px] opacity-20"></div>
+      <div className="absolute top-[-10%] left-[-10%] w-32 h-32 bg-indigo-100 rounded-full blur-[60px] opacity-20"></div>
       
       <div className="w-full relative z-10">
-        <h3 className="text-xl font-black text-slate-900 mb-8 w-full text-left tracking-tight flex items-center gap-2">
-           <div className="w-1.5 h-6 bg-indigo-500 rounded-full shadow-lg shadow-indigo-100"></div>
-           Global Response Mix
-        </h3>
-        <div className="w-full h-80 flex items-center justify-center">
+        <div className="flex items-center justify-between mb-6 overflow-hidden">
+           <h3 className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
+              <div className="w-1 h-5 bg-indigo-500 rounded-full shadow-lg shadow-indigo-100"></div>
+              Global Response Mix
+           </h3>
+           <button 
+             onClick={() => onViewFull({ title: 'Global Response Analysis', data: occPieData })}
+             className="text-[8px] font-bold text-indigo-500 uppercase tracking-widest hover:text-indigo-700 transition-colors"
+           >
+              View Full
+           </button>
+        </div>
+        <div className="w-full h-64 flex items-center justify-center cursor-pointer">
            {data.length > 0 ? (
              <Pie data={occPieData} options={pieOptions} />
            ) : (
-             <div className="text-slate-300 font-bold uppercase tracking-widest text-xs">No enough data</div>
+             <div className="text-slate-300 font-bold uppercase tracking-widest text-[10px]">Insufficient Data</div>
            )}
         </div>
       </div>

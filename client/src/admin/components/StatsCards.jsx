@@ -68,24 +68,24 @@ export default function StatsCards({ data }) {
   if (!stats.length) return null;
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5 animate-fadeIn">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 animate-fadeIn">
       {stats.map((s, i) => (
-        <div key={i} className={`bg-white rounded-3xl shadow-xl ${s.shadow} border ${s.border} p-5 flex flex-col items-center group hover:scale-[1.03] transition-all duration-500 relative overflow-hidden`}>
+        <div key={i} className={`bg-white rounded-xl shadow-md ${s.shadow} border ${s.border} p-4 flex flex-col items-center group hover:scale-[1.02] transition-all duration-300 relative overflow-hidden`}>
           {/* Progress circle decor */}
-          <div className="absolute top-[-20%] right-[-10%] w-16 h-16 bg-slate-50 rounded-full group-hover:scale-150 transition-transform duration-700 opacity-50"></div>
+          <div className="absolute top-[-25%] right-[-15%] w-12 h-12 bg-slate-50 rounded-full group-hover:scale-125 transition-transform duration-500 opacity-40"></div>
           
-          <div className={`${s.color} text-white p-3 rounded-2xl shadow-lg mb-4 transform group-hover:rotate-12 transition-transform relative z-10`}>
-             <s.icon className="h-5 w-5" />
+          <div className={`${s.color} text-white p-2.5 rounded-xl shadow-lg mb-3 transform group-hover:rotate-12 transition-transform relative z-10`}>
+             <s.icon className="h-4 w-4" />
           </div>
           
           <div className="text-center relative z-10">
-            <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{s.label}</h4>
-            <p className="text-2xl font-black text-slate-900 tracking-tighter">
+            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{s.label}</h4>
+            <p className="text-xl font-black text-slate-900 tracking-tighter leading-tight">
               {s.value}
             </p>
             {s.label !== 'Total Responses' && (
-              <div className="text-[8px] font-bold text-slate-400 mt-1 uppercase tracking-widest px-2 py-0.5 bg-slate-50 rounded-md">
-                 {data.length > 0 ? Math.round((s.value / data.length) * 100) : 0}% of all
+              <div className="text-[8px] font-bold text-slate-400 mt-1 uppercase tracking-widest px-1.5 py-0.5 bg-slate-50 rounded-md">
+                 {data.length > 0 ? Math.round((s.value / data.length) * 100) : 0}%
               </div>
             )}
           </div>

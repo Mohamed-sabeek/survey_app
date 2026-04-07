@@ -14,7 +14,7 @@ import { Lightbulb, TrendingUp, AlertTriangle } from 'lucide-react';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
 
-export default function InsightsSection({ data, selectedOccupation }) {
+export default function InsightsSection({ data, selectedOccupation, onViewFull }) {
   
   if (selectedOccupation === 'all') {
     return (
@@ -110,35 +110,42 @@ export default function InsightsSection({ data, selectedOccupation }) {
 
   }, [data, selectedOccupation]);
 
-  const barOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { display: false }, tooltip: { cornerRadius: 8, padding: 12 } },
-    scales: { 
-      y: { beginAtZero: true, grid: { display: false }, ticks: { font: { weight: 'black', size: 10 } } },
-      x: { grid: { display: false }, ticks: { font: { weight: 'black', size: 9 } } }
-    }
-  };
-
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fadeIn">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fadeIn">
        {analytics.map((chart, i) => (
-         <div key={i} className="bg-slate-50 p-6 lg:p-8 rounded-[2.5rem] border border-slate-100 hover:border-slate-200 transition-all hover:bg-white hover:shadow-xl hover:shadow-slate-200/40 relative overflow-hidden group">
-            <div className="flex items-center justify-between mb-6">
-              <h4 className="text-sm font-black text-slate-800 uppercase tracking-tighter flex items-center gap-2">
-                 <span className="w-1.5 h-4 rounded-full" style={{ backgroundColor: chart.chartData.datasets[0].backgroundColor }}></span>
+         <div key={i} className="bg-slate-50 p-5 rounded-3xl border border-slate-100 hover:border-slate-200 transition-all hover:bg-white hover:shadow-lg hover:shadow-slate-200/30 relative overflow-hidden group">
+            <div className="flex items-center justify-between mb-5">
+              <h4 className="text-xs font-black text-slate-800 uppercase tracking-tighter flex items-center gap-2">
+                 <span className="w-1 h-3.5 rounded-full" style={{ backgroundColor: chart.chartData.datasets[0].backgroundColor }}></span>
                  {chart.title}
               </h4>
-              <div className="bg-white p-2 rounded-xl border border-slate-100 group-hover:bg-slate-50 transition-colors">
-                 <TrendingUp className="w-3.5 h-3.5 text-slate-400" />
-              </div>
+              <button 
+                onClick={() => onViewFull({ title: chart.title, data: chart.chartData })}
+                className="bg-white p-1.5 rounded-lg border border-slate-100 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all hover:scale-105 active:scale-95"
+              >
+                 <TrendingUp className="w-3.5 h-3.5" />
+              </button>
             </div>
             
-            <div className="w-full h-48">
+            <div 
+              className="w-full h-52 cursor-pointer"
+              onClick={() => onViewFull({ title: chart.title, data: chart.chartData })}
+            >
                {Object.keys(chart.chartData.labels).length > 0 ? (
-                 <Bar data={chart.chartData} options={barOptions} />
+                 <Bar 
+                    data={chart.chartData} 
+                    options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { 
+                        y: { beginAtZero: true, grid: { display: false }, ticks: { font: { weight: 'black', size: 9 } } },
+                        x: { grid: { display: false }, ticks: { font: { weight: 'black', size: 8 } } }
+                        }
+                    }} 
+                 />
                ) : (
-                 <div className="h-full flex items-center justify-center text-slate-300 font-bold uppercase tracking-widest text-[9px] border-2 border-dashed border-slate-200 rounded-3xl">No Data Feed</div>
+                 <div className="h-full flex items-center justify-center text-slate-300 font-bold uppercase tracking-widest text-[9px] border-2 border-dashed border-slate-200 rounded-2xl">No Data Feed</div>
                )}
             </div>
          </div>

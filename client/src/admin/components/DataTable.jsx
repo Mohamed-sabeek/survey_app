@@ -53,22 +53,22 @@ export default function DataTable({ data, onRefresh }) {
           <div className="bg-indigo-500 w-2 h-8 rounded-full shadow-lg shadow-indigo-100"></div>
           <h3 className="text-xl font-black text-slate-800 tracking-tighter uppercase">Raw Submission Stream</h3>
         </div>
-        <span className="bg-slate-900 text-white font-black px-4 py-1.5 rounded-full text-[10px] tracking-widest uppercase border border-slate-800 shadow-xl">
-          {data.length} Logs Active
+        <span className="bg-slate-900 text-white font-black px-3 py-1 rounded-full text-[9px] tracking-widest uppercase border border-slate-800 shadow-lg">
+          {data.length} Logs
         </span>
       </div>
       
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm whitespace-nowrap">
           <thead className="bg-slate-50 text-slate-400 font-black border-b border-slate-100">
-               <tr>
-                 <th className="px-6 py-4 uppercase tracking-widest text-[9px]">Occupation</th>
-                 <th className="px-6 py-4 uppercase tracking-widest text-[9px]"><div className="flex items-center gap-2"><User className="w-3 h-3" /> Gender</div></th>
-                 <th className="px-6 py-4 uppercase tracking-widest text-[9px]"><div className="flex items-center gap-2"><MapPin className="w-3 h-3" /> Area</div></th>
-                 <th className="px-6 py-4 uppercase tracking-widest text-[9px]"><div className="flex items-center gap-2"><Hash className="w-3 h-3" /> Age Range</div></th>
-                 <th className="px-6 py-4 uppercase tracking-widest text-[9px]"><div className="flex items-center gap-2"><Calendar className="w-3 h-3" /> Date</div></th>
-                 <th className="px-6 py-4 uppercase tracking-widest text-right text-[9px]">Manage</th>
-               </tr>
+                <tr>
+                  <th className="px-5 py-3 uppercase tracking-widest text-[8.5px]">Occupation</th>
+                  <th className="px-5 py-3 uppercase tracking-widest text-[8.5px]"><div className="flex items-center gap-1.5"><User className="w-2.5 h-2.5" /> Gender</div></th>
+                  <th className="px-5 py-3 uppercase tracking-widest text-[8.5px]"><div className="flex items-center gap-1.5"><MapPin className="w-2.5 h-2.5" /> Area</div></th>
+                  <th className="px-5 py-3 uppercase tracking-widest text-[8.5px]"><div className="flex items-center gap-1.5"><Hash className="w-2.5 h-2.5" /> Age</div></th>
+                  <th className="px-5 py-3 uppercase tracking-widest text-[8.5px]"><div className="flex items-center gap-1.5"><Calendar className="w-2.5 h-2.5" /> Date</div></th>
+                  <th className="px-5 py-3 uppercase tracking-widest text-right text-[8.5px]">Manage</th>
+                </tr>
           </thead>
           <tbody className="divide-y divide-slate-50 text-slate-700">
             {data.map((row) => (
@@ -132,15 +132,15 @@ export default function DataTable({ data, onRefresh }) {
       {/* Row detail viewer (Premium Backdrop) */}
       {viewingRow && (
         <div className="fixed inset-0 z-[100] bg-slate-900/50 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white w-full max-w-xl max-h-[85vh] rounded-[2.5rem] overflow-hidden shadow-2xl animate-scaleIn flex flex-col border border-white/50">
-            <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/30">
+         <div className="bg-white w-full max-w-2xl max-h-[90vh] rounded-3xl overflow-hidden shadow-2xl animate-scaleIn flex flex-col border border-white/50">
+            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/30">
                <div>
-                  <h3 className="text-xl font-black text-slate-900 tracking-tighter uppercase leading-none">Inspection Report</h3>
-                  <p className="text-[9px] font-black text-indigo-500 tracking-[0.3em] mt-1.5 uppercase">ENTRY: {viewingRow._id.substring(0, 12)}...</p>
+                  <h3 className="text-lg font-black text-slate-900 tracking-tighter uppercase leading-none">Inspection Report</h3>
+                  <p className="text-[8px] font-black text-indigo-500 tracking-[0.2em] mt-1 uppercase">ID: {viewingRow._id.substring(0, 10)}</p>
                </div>
-               <button onClick={() => setViewingRow(null)} className="text-slate-300 hover:text-slate-900 text-3xl font-light transition-colors p-2">×</button>
+               <button onClick={() => setViewingRow(null)} className="text-slate-300 hover:text-slate-900 text-2xl font-light transition-colors p-2">×</button>
             </div>
-            <div className="p-8 overflow-y-auto space-y-6 bg-slate-50/10">
+            <div className="p-4 sm:p-6 lg:p-8 overflow-y-auto space-y-5 bg-slate-50/10">
                <div className="grid grid-cols-2 gap-3">
                   <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
                      <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 pointer-events-none">Occupation</p>
