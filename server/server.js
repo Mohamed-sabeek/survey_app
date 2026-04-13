@@ -14,10 +14,13 @@ const app = express();
 // Security & CORS Configuration
 const allowedOrigins = [
   'https://survey-app-sigma-neon.vercel.app',
+  'https://communitysurvey-app.vercel.app',
+  process.env.FRONTEND_URL,
+  process.env.CLIENT_URL,
   'http://localhost:5172', // For local Vite
   'http://localhost:5173', // For local Vite
   'http://localhost:5174', // For local Vite
-];
+].filter(Boolean);
 
 const corsOptions = {
   origin: function (origin, callback) {
