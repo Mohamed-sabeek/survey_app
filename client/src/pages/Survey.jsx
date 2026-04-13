@@ -107,11 +107,24 @@ export default function Survey() {
       setSubmitted(true);
       window.scrollTo(0, 0);
     } catch (err) {
+      console.error("API Error (Submission):", err);
       setSubmitError(err.response?.data?.error || 'சமர்ப்பிப்பதில் தோல்வி. மீண்டும் முயலவும். (Submission failed)');
     } finally {
       setLoading(false);
     }
   };
+
+  if (loading) {
+    return <div className="text-center p-4">Loading...</div>;
+  }
+
+  if (!questions || questions.length === 0) {
+    return (
+      <div className="text-center p-4">
+        Something went wrong. Please refresh or try again later.
+      </div>
+    );
+  }
 
   if (submitted) {
     return (
